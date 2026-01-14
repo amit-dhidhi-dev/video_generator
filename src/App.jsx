@@ -6,6 +6,8 @@ import ControlsPanel from './components/ControlsPanel';
 import PreviewPanel from './components/PreviewPanel';
 import VideoGenerator from './components/VideoGenerator';
 import { Video, Palette, Sliders, Upload, Download, Settings, Eye, Sparkles, Menu, X } from 'lucide-react';
+import AudioTimeCalculator from './components/AudioTime';
+import WordTimingAnalyzer from './components/AudioTime';
 
 
 function App() {
@@ -48,6 +50,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">    
+    {/* <WordTimingAnalyzer /> */}
       {/* Header - Fixed width with proper container */}
       <header className="sticky top-0 z-50 border-b border-gray-800/50 bg-gray-900/95 backdrop-blur-xl">
         <div className="w-full px-4 py-3">
