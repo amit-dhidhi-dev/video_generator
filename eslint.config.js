@@ -15,7 +15,11 @@ export default defineConfig([
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      // globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.worker  // <--- यह importScripts एरर को फिक्स करेगा
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },

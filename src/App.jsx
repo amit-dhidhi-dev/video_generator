@@ -6,8 +6,7 @@ import ControlsPanel from './components/ControlsPanel';
 import PreviewPanel from './components/PreviewPanel';
 import VideoGenerator from './components/VideoGenerator';
 import { Video, Palette, Sliders, Upload, Download, Settings, Eye, Sparkles, Menu, X } from 'lucide-react';
-import AudioTimeCalculator from './components/AudioTime';
-import WordTimingAnalyzer from './components/AudioTime';
+
 
 
 function App() {
@@ -27,15 +26,12 @@ function App() {
     contrast: 100,
     textPosition: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    transition: 'fade'
+    transition: 'fade',
+    wordPerSlide: 20,
   });
 
-  // Generate preview slides when inputs change
-  useEffect(() => {
-    if (image && story) {
-      generatePreviewSlides();     
-    }
-  }, [image, story, controls]);
+
+
 
   const generatePreviewSlides = () => {
     const paragraphs = story.split('\n\n').filter(p => p.trim());
@@ -48,9 +44,95 @@ function App() {
     setSlides(newSlides);
   };
 
+  useEffect(() => {
+    if (image && story) {
+      generatePreviewSlides();
+    }
+  }, [image, story, controls.slideDuration]);
+
+
+
+  // const setSlideDurationBasedOnVoice = useCallback(async () => {
+  //   const words = story.trim().split(/\s+/).filter(word => word.length > 0);
+  //   const url = URL.createObjectURL(voice);
+  //   const audio = new Audio(url);
+  //   audio.addEventListener('loadedmetadata', () => {
+  //     const duration = audio.duration;
+  //     // const wordsPerSecond = words.length / duration;
+  //     // const slideDuration = Math.max(1, Math.floor(wordsPerSecond * 5)); // Adjust based on desired slide duration
+
+  //     const secondsPerWord = duration / words.length;
+  //     const slideDuration = Math.max(1, Math.floor(secondsPerWord * controls.wordPerSlide));
+  //     // console.log('app slide duration -> ', slideDuration)
+
+  //     setControls(prev => ({
+  //       ...prev,
+  //       [controls.slideDuration]: slideDuration
+  //     }));
+  //   });
+  // }, [voice, story, controls.wordPerSlide])
+
+  // Handle voice separately to avoid infinite loop
+  // Effect for voice - still needed for side effects
+
+  // Voice duration calculation - React Compiler will optimize
+  const setSlideDurationBasedOnVoice = async () => {
+    if (!story || !voice) return;
+
+    const words = story.trim().split(/\s+/).filter(word => word.length > 0);
+    const url = URL.createObjectURL(voice);
+
+    try {
+      const duration = await new Promise((resolve) => {
+        const audio = new Audio(url);
+        audio.addEventListener('loadedmetadata', () => {
+          resolve(audio.duration);
+          URL.revokeObjectURL(url);
+        });
+        audio.addEventListener('error', () => {
+          resolve(0);
+          URL.revokeObjectURL(url);
+        });
+      });
+
+      if (duration > 0 && words.length > 0) {
+        const secondsPerWord = duration / words.length;
+        // const slideDuration = Math.max(1, Math.floor(secondsPerWord * controls.wordPerSlide));
+        const slideDuration = secondsPerWord * controls.wordPerSlide;
+
+        setControls(prev => ({
+          ...prev,
+          slideDuration: slideDuration
+        }));
+        // setControls(prev => {
+        //   if (prev.slideDuration !== slideDuration) {
+        //     return { ...prev, slideDuration };
+        //   }
+        //   return prev;
+        // });
+      }
+    } catch (error) {
+      console.error('Error calculating voice duration:', error);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+
+  useEffect(() => {
+    if (voice && story) {
+      console.log('voice or story changed, recalculating slide duration')
+      setSlideDurationBasedOnVoice();
+    }
+  }, [voice, story]);
+
+
+
+
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">    
-    {/* <WordTimingAnalyzer /> */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+
+      {/* <WordTimingAnalyzer /> */}
       {/* Header - Fixed width with proper container */}
       <header className="sticky top-0 z-50 border-b border-gray-800/50 bg-gray-900/95 backdrop-blur-xl">
         <div className="w-full px-4 py-3">
@@ -79,8 +161,8 @@ function App() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${activeTab === tab.id
-                      ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
                     }`}
                 >
                   <tab.icon className="h-4 w-4" />
@@ -94,7 +176,7 @@ function App() {
                 <Download className="h-4 w-4" />
                 Export
               </button>
-              
+
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white"
@@ -121,8 +203,8 @@ function App() {
                       setIsMobileMenuOpen(false);
                     }}
                     className={`flex flex-col items-center gap-1 p-2 rounded-lg ${activeTab === tab.id
-                        ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white'
-                        : 'bg-gray-800 text-gray-400'
+                      ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white'
+                      : 'bg-gray-800 text-gray-400'
                       }`}
                   >
                     <tab.icon className="h-4 w-4" />
@@ -161,7 +243,7 @@ function App() {
                   </div>
                   <h2 className="text-base sm:text-lg font-semibold text-white">Story Content</h2>
                 </div>
-                <StoryInput story={story} setStory={setStory} />
+                <StoryInput story={story} setStory={setStory} numberOfWordsPerSlides={controls.wordPerSlide} />
               </div>
 
               {/* Voice Upload Card - Full width on mobile, 2 cols on desktop */}
@@ -226,7 +308,7 @@ function App() {
                 image={image}
                 story={story}
               />
-              
+
               {/* Quick Actions - Compact */}
               <div className="mt-4 pt-4 border-t border-gray-800/50">
                 <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-2">Quick Actions</h3>
@@ -265,7 +347,7 @@ function App() {
               </div>
             ))}
           </div>
-          
+
           <div className="mt-6 pt-4 border-t border-gray-800/30 text-center">
             <p className="text-gray-500 text-xs sm:text-sm">
               Made with ❤️ • All processing in browser
@@ -275,11 +357,12 @@ function App() {
       </footer>
 
       {/* Floating Action Button for Mobile */}
-      <button className="fixed bottom-4 right-4 md:hidden z-40 p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-xl">
+      {/* <button className="fixed bottom-4 right-4 md:hidden z-40 p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-xl">
         <Download className="h-5 w-5" />
-      </button>
+      </button> */}
     </div>
   );
+
 }
 
 export default App;

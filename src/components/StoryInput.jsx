@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  BookOpen, 
-  Type, 
-  Hash, 
-  Eye, 
-  EyeOff, 
-  Sparkles, 
+import {
+  BookOpen,
+  Type,
+  Hash,
+  Eye,
+  EyeOff,
+  Sparkles,
   Scissors,
   Clock,
   FileText,
@@ -17,7 +17,7 @@ import {
   Maximize2
 } from 'lucide-react';
 
-const StoryInput = ({ story, setStory }) => {
+const StoryInput = ({ story, setStory, numberOfWordsPerSlides }) => {
   // const [showPreview, setShowPreview] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [paragraphCount, setParagraphCount] = useState(0);
@@ -76,41 +76,153 @@ const StoryInput = ({ story, setStory }) => {
       .replace(/\s+/g, ' ') // Normalize whitespace
       .replace(/\n\s*\n/g, '\n\n') // Normalize paragraph breaks
       .trim();
-    
+
     // Capitalize first letter of each sentence
     formatted = formatted.replace(/(^\w|\.\s+\w|!\s+\w|\?\s+\w)/g, match => match.toUpperCase());
-    
+
     // Ensure proper paragraph formatting
     formatted = formatted.split('\n\n')
       .map(para => para.trim())
       .filter(para => para.length > 0)
       .join('\n\n');
-    
+
     setStory(formatted);
   };
+
+  // const splitIntoSlides = () => {
+  //   if (!story.trim()) return;
+
+  //   // Split by sentences for better slide distribution
+  //   const sentences = story.match(/[^.!?]+[.!?]+/g) || [story];
+
+  //   // Group sentences into slides (2-3 sentences per slide)
+  //   const slides = [];
+  //   let currentSlide = [];
+
+  //   sentences.forEach((sentence, index) => {
+  //     currentSlide.push(sentence.trim());
+
+  //     if (currentSlide.length === 2 || index === sentences.length - 1) {
+  //       slides.push(currentSlide.join(' '));
+  //       currentSlide = [];
+  //     }
+  //   });
+
+  //   // const formatted = slides.join('\n\n--- SLIDE BREAK ---\n\n');
+  //   const formatted = slides.join('\n\n');
+  //   setStory(formatted);
+  // };
+
+
+
+  // const splitIntoSlides = () => {
+  //   if (!story.trim()) return;
+
+  //   // Split by sentences while preserving punctuation
+  //   const sentences = story.match(/[^.!?]+[.!?]+/g) || [story];
+
+  //   // Filter out empty sentences and trim
+  //   const cleanSentences = sentences
+  //     .map(s => s.trim())
+  //     .filter(s => s.length > 0);
+
+  //   // Group sentences to ensure at least 20 words per slide
+  //   const slides = [];
+  //   let currentSlide = [];
+  //   let currentWordCount = 0;
+
+  //   cleanSentences.forEach((sentence, index) => {
+  //     const sentenceWordCount = sentence.split(/\s+/).length;
+  //     const isLastSentence = index === cleanSentences.length - 1;
+
+  //     // Add sentence to current slide
+  //     currentSlide.push(sentence);
+  //     currentWordCount += sentenceWordCount;
+
+  //     // Decide when to create a new slide:
+  //     // 1. If we have at least 20 words AND this slide has 2+ sentences
+  //     // 2. OR if it's the last sentence
+  //     // 3. OR if adding next sentence would exceed reasonable length (optional)
+  //     const hasEnoughWords = currentWordCount >= 20;
+  //     const hasMultipleSentences = currentSlide.length >= 2;
+  //     const shouldFinalize = (hasEnoughWords && hasMultipleSentences) || isLastSentence;
+
+  //     // Optional: Prevent slides from getting too long (max ~40 words)
+  //     const wouldBeTooLong = currentWordCount + sentenceWordCount > 40;
+
+  //     if (shouldFinalize || wouldBeTooLong) {
+  //       // Ensure minimum word count by potentially adding next sentence
+  //       if (currentWordCount < 20 && !isLastSentence) {
+  //         // Don't finalize yet, wait for more sentences
+  //         return;
+  //       }
+
+  //       slides.push(currentSlide.join(' '));
+  //       currentSlide = [];
+  //       currentWordCount = 0;
+  //     }
+  //   });
+
+  //   // Handle case where last slide might have fewer than 20 words
+  //   if (currentSlide.length > 0 && currentWordCount < 20) {
+  //     // Merge with previous slide if possible
+  //     if (slides.length > 0) {
+  //       const lastSlide = slides.pop();
+  //       slides.push(lastSlide + ' ' + currentSlide.join(' '));
+  //     } else {
+  //       slides.push(currentSlide.join(' '));
+  //     }
+  //   }
+
+  //   const formatted = slides.join('\n\n');
+  //   setStory(formatted);
+  // };
 
   const splitIntoSlides = () => {
     if (!story.trim()) return;
 
-    // Split by sentences for better slide distribution
-    const sentences = story.match(/[^.!?]+[.!?]+/g) || [story];
-    
-    // Group sentences into slides (2-3 sentences per slide)
+    // Get all words
+    const allWords = story.trim().split(/\s+/).filter(word => word.length > 0);
+    const totalWords = allWords.length;
+
+    // Calculate number of slides needed
+    const slidesCount = Math.ceil(totalWords / numberOfWordsPerSlides);
     const slides = [];
-    let currentSlide = [];
-    
-    sentences.forEach((sentence, index) => {
-      currentSlide.push(sentence.trim());
-      
-      if (currentSlide.length === 2 || index === sentences.length - 1) {
-        slides.push(currentSlide.join(' '));
-        currentSlide = [];
+
+    // Distribute words evenly across slides
+    for (let i = 0; i < slidesCount; i++) {
+      // Calculate start and end indices for this slide
+      const start = Math.floor(i * totalWords / slidesCount);
+      const end = Math.floor((i + 1) * totalWords / slidesCount);
+
+      const slideWords = allWords.slice(start, end);
+
+      // Ensure exactly 20 words by borrowing from next if needed
+      if (slideWords.length < numberOfWordsPerSlides && i < slidesCount - 1) {
+        const needed = numberOfWordsPerSlides - slideWords.length;
+        const nextWords = allWords.slice(end, end + needed);
+        slideWords.push(...nextWords);
       }
-    });
-    
-    const formatted = slides.join('\n\n--- SLIDE BREAK ---\n\n');
+
+      let slideText = slideWords.join(' ');
+
+      // Add appropriate punctuation
+      if (!/[.!?]$/.test(slideText)) {
+        if (i < slidesCount - 1) {
+          slideText += '...'; // Continue to next slide
+        } else {
+          slideText += '.'; // End of story
+        }
+      }
+
+      slides.push(slideText);
+    }
+
+    const formatted = slides.join('\n\n');
     setStory(formatted);
   };
+
+  useEffect (()=>{if(story.trim()) splitIntoSlides();},[numberOfWordsPerSlides])
 
   const sampleStories = [
     {
@@ -143,7 +255,7 @@ const StoryInput = ({ story, setStory }) => {
 
   const copyToClipboard = async () => {
     if (!story.trim()) return;
-    
+
     try {
       await navigator.clipboard.writeText(story);
       setCopied(true);
@@ -190,28 +302,28 @@ const StoryInput = ({ story, setStory }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Tab Navigation */}
           <div className="flex bg-gray-800/50 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('write')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'write' 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'write'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'text-gray-400 hover:text-white'}`}
             >
               Write
             </button>
             <button
               onClick={() => setActiveTab('preview')}
-              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'preview' 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeTab === 'preview'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
                 : 'text-gray-400 hover:text-white'}`}
             >
               Preview
             </button>
           </div>
-          
+
           <button
             onClick={clearText}
             className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
@@ -251,7 +363,7 @@ const StoryInput = ({ story, setStory }) => {
             Est. Time
           </div>
           <div className="text-xl font-bold text-white">
-            {estimatedTime > 60 
+            {estimatedTime > 60
               ? `${Math.floor(estimatedTime / 60)}:${(estimatedTime % 60).toString().padStart(2, '0')}`
               : `${estimatedTime}s`
             }
@@ -280,7 +392,7 @@ For best results:
               className="story-textarea w-full h-full min-h-[200px] bg-gray-900/50 border border-gray-700 rounded-xl p-4 text-white placeholder-gray-500 resize-none focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all"
               rows={8}
             />
-            
+
             {/* Textarea Controls */}
             <div className="absolute bottom-3 right-3 flex items-center gap-2">
               <button
@@ -325,8 +437,8 @@ For best results:
             {story ? (
               <div className="space-y-4">
                 {story.split('\n\n').filter(p => p.trim()).map((paragraph, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="relative bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 hover:border-purple-500/30 transition-colors group"
                   >
                     <div className="absolute -top-2 -left-2 w-6 h-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-xs font-bold text-white">
@@ -404,8 +516,5 @@ For best results:
 };
 
 export default StoryInput;
-
-
-
 
 

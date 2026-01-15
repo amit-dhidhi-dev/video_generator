@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  Type, 
-  Palette, 
-  Timer, 
-  Contrast, 
-  Sun, 
-  Droplets, 
+import {
+  Settings,
+  Type,
+  Palette,
+  Timer,
+  Contrast,
+  Sun,
+  Droplets,
   Layers,
   Zap,
   Copy,
@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Save,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Binary
 } from 'lucide-react';
 
 const ControlsPanel = ({ controls, setControls }) => {
@@ -218,7 +219,7 @@ const ControlsPanel = ({ controls, setControls }) => {
 
   const rgbaToHex = (rgba) => {
     if (rgba.startsWith('#')) return rgba;
-    
+
     const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     if (match) {
       const r = parseInt(match[1]);
@@ -279,8 +280,8 @@ const ControlsPanel = ({ controls, setControls }) => {
               key={preset.id}
               onClick={() => applyPreset(preset)}
               className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border flex items-center gap-1 sm:gap-2 transition-all ${activePreset === preset.id
-                  ? 'border-amber-500 bg-gradient-to-r from-amber-500/10 to-orange-500/10'
-                  : 'border-gray-700 bg-gray-800/30 hover:bg-gray-800/50'
+                ? 'border-amber-500 bg-gradient-to-r from-amber-500/10 to-orange-500/10'
+                : 'border-gray-700 bg-gray-800/30 hover:bg-gray-800/50'
                 }`}
             >
               <span className="text-sm sm:text-base">{preset.icon}</span>
@@ -294,7 +295,7 @@ const ControlsPanel = ({ controls, setControls }) => {
 
       {/* Controls Grid - Responsive layout */}
       <div className={`space-y-4 sm:space-y-6 ${isExpanded ? 'lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0' : ''}`}>
-        
+
         {/* Background Controls */}
         <div className="space-y-4 sm:space-y-6">
           {/* Background Blur */}
@@ -425,7 +426,7 @@ const ControlsPanel = ({ controls, setControls }) => {
           </div>
 
           {/* Slide Duration */}
-          <div className="bg-gray-800/30 rounded-xl p-3 sm:p-4">
+          {/* <div className="bg-gray-800/30 rounded-xl p-3 sm:p-4">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
               <div className="flex items-center gap-2">
                 <Timer className="h-4 w-4 text-red-400" />
@@ -448,7 +449,34 @@ const ControlsPanel = ({ controls, setControls }) => {
               <span>1s</span>
               <span>15s</span>
             </div>
+          </div> */}
+
+          {/* Word Per Slide  */}
+          <div className="bg-gray-800/30 rounded-xl p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="flex items-center gap-2">
+                <Binary className="h-4 w-4 text-red-400" />
+                <label className="text-xs sm:text-sm font-medium text-gray-300">Word Per Slide </label>
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-white px-2 py-1 bg-gray-800 rounded">
+                {controls.wordPerSlide || 20} words
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="50"
+              step="1"
+              value={controls.wordPerSlide || 20}
+              onChange={(e) => handleChange('wordPerSlide', parseFloat(e.target.value))}
+              className="w-full h-1.5 sm:h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-amber-400 [&::-webkit-slider-thumb]:to-orange-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-gray-800"
+            />
+            <div className="flex justify-between text-[10px] sm:text-xs text-gray-500 mt-1">
+              <span>0</span>
+              <span>50</span>
+            </div>
           </div>
+
         </div>
 
         {/* Advanced Controls - Show when expanded */}
@@ -466,8 +494,8 @@ const ControlsPanel = ({ controls, setControls }) => {
                     key={position.value}
                     onClick={() => handleChange('textPosition', position.value)}
                     className={`aspect-square p-1 sm:p-2 rounded-lg border flex flex-col items-center justify-center gap-1 ${controls.textPosition === position.value
-                        ? 'border-amber-500 bg-gradient-to-r from-amber-500/10 to-orange-500/10'
-                        : 'border-gray-700 bg-gray-800/30 hover:bg-gray-800/50'
+                      ? 'border-amber-500 bg-gradient-to-r from-amber-500/10 to-orange-500/10'
+                      : 'border-gray-700 bg-gray-800/30 hover:bg-gray-800/50'
                       }`}
                     title={position.fullLabel}
                   >
