@@ -464,7 +464,7 @@ const ControlsPanel = ({ controls, setControls }) => {
             </div>
             <input
               type="range"
-              min="0"
+              min="1"
               max="50"
               step="1"
               value={controls.wordPerSlide || 20}
@@ -472,7 +472,7 @@ const ControlsPanel = ({ controls, setControls }) => {
               className="w-full h-1.5 sm:h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-amber-400 [&::-webkit-slider-thumb]:to-orange-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-gray-800"
             />
             <div className="flex justify-between text-[10px] sm:text-xs text-gray-500 mt-1">
-              <span>0</span>
+              <span>1</span>
               <span>50</span>
             </div>
           </div>
